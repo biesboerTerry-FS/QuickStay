@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { useClerk, useUser, UserButton } from "@clerk/clerk-react";
+import ThemeToggle from "./ThemeToggle";
 
 const BookIcon = () => (
 	<svg
@@ -23,14 +24,30 @@ const BookIcon = () => (
 	</svg>
 );
 
-const Navbar = () => {
-	const navLinks = [
-		{ name: "Home", path: "/" },
-		{ name: "Hotels", path: "/rooms" },
-		{ name: "Experience", path: "/" },
-		{ name: "About", path: "/" },
-	];
+const HeartIcon = () => (
+	<svg
+		className="w-4 h-4 text-gray-700"
+		aria-hidden="true"
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="2"
+		strokeLinejoin="round"
+	>
+		<path d="M12 21s-7-4.35-9.5-8.5C.8 9.6 2.2 5.5 6 5.5c2.2 0 3.5 1.3 4.5 2.7C11.5 6.8 12.8 5.5 15 5.5c3.8 0 5.2 4.1 3.5 7C19 17.15 12 21 12 21z" />
+	</svg>
+);
 
+const navLinks = [
+	{ name: "Home", path: "/" },
+	{ name: "Hotels", path: "/rooms" },
+	{ name: "Experience", path: "/experience" },
+	{ name: "About", path: "/about" },
+];
+
+const Navbar = () => {
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -41,44 +58,78 @@ const Navbar = () => {
 	const location = useLocation();
 
 	useEffect(() => {
+		setIsMenuOpen(false);
+
 		if (location.pathname !== "/") {
 			setIsScrolled(true);
 			return;
-		} else {
-			setIsScrolled(false);
 		}
-		setIsScrolled((prev) => (location.pathname !== "/" ? true : prev));
 
-		const handleScroll = () => {
-			setIsScrolled(window.scrollY > 10);
-		};
+		const handleScroll = () => setIsScrolled(window.scrollY > 10);
+		handleScroll();
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, [location.pathname]);
 
+	const accountMenu = (
+		<UserButton>
+			<UserButton.MenuItems>
+				<UserButton.Action
+					label="My bookings"
+					labelIcon={<BookIcon />}
+					onClick={() => navigate("/my-bookings")}
+				/>
+				<UserButton.Action
+					label="Saved rooms"
+					labelIcon={<HeartIcon />}
+					onClick={() => navigate("/saved")}
+				/>
+			</UserButton.MenuItems>
+		</UserButton>
+	);
+
 	return (
 		<nav
-			className={`fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-32 transition-all duration-500 z-50 ${
+			className={`fixed top-0 left-0 w-full flex items-center justify-between px-4 md:px-10 lg:px-16 xl:px-20 transition-all duration-500 z-50 ${
 				isScrolled
-					? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-4"
-					: "py-4 md:py-6"
+					? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-2 md:py-3"
+					: "py-2 md:py-4"
 			}`}
 		>
-			{/* Logo */}
-			<Link to="/">
+			<Link
+				to="/"
+				onClick={(e) => {
+					if (location.pathname === "/") {
+						e.preventDefault();
+						window.scrollTo({ top: 0, behavior: "smooth" });
+					} else {
+						window.scrollTo(0, 0);
+					}
+				}}
+				aria-label="QuickStay home"
+			>
 				<img
 					src={assets.logo}
-					alt="logo"
-					className={`h-9 ${isScrolled && "invert opacity-80"}`}
+					alt="QuickStay logo"
+					className={`h-9 ${isScrolled ? "invert opacity-80" : ""}`}
 				/>
 			</Link>
 
 			{/* Desktop Nav */}
 			<div className="hidden md:flex items-center gap-4 lg:gap-8">
-				{navLinks.map((link, i) => (
-					<a
-						key={i}
-						href={link.path}
+				{navLinks.map((link) => (
+					<NavLink
+						key={link.name}
+						to={link.path}
+						end
+						onClick={(e) => {
+							if (link.path === "/" && location.pathname === "/") {
+								e.preventDefault();
+								window.scrollTo({ top: 0, behavior: "smooth" });
+							} else {
+								window.scrollTo(0, 0);
+							}
+						}}
 						className={`group flex flex-col gap-0.5 ${
 							isScrolled ? "text-gray-700" : "text-white"
 						}`}
@@ -89,42 +140,32 @@ const Navbar = () => {
 								isScrolled ? "bg-gray-700" : "bg-white"
 							} h-0.5 w-0 group-hover:w-full transition-all duration-300`}
 						/>
-					</a>
+					</NavLink>
 				))}
-				<button
-					onClick={() => navigate("/owner")}
-					className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${
-						isScrolled ? "text-black" : "text-white"
-					} transition-all`}
-				>
-					Dashboard
-				</button>
 			</div>
 
 			{/* Desktop Right */}
 			<div className="hidden md:flex items-center gap-4">
-				<img
-					src={assets.searchIcon}
-					alt="search"
-					className={`${isScrolled && "invert"}
-            h-7 transition-all duration-500
-            `}
-				/>
+				<ThemeToggle />
+				<button
+					type="button"
+					onClick={() => navigate("/rooms")}
+					aria-label="Search hotels"
+					className="cursor-pointer"
+				>
+					<img
+						src={assets.searchIcon}
+						alt="search"
+						className={`${isScrolled ? "invert" : ""} h-7 transition-all duration-500`}
+					/>
+				</button>
 
 				{user ? (
-					<UserButton>
-						<UserButton.MenuItems>
-							<UserButton.Action
-								label="My bookings"
-								labelIcon={<BookIcon />}
-								onClick={() => navigate("/my-bookings")}
-							/>
-						</UserButton.MenuItems>
-					</UserButton>
+					accountMenu
 				) : (
 					<button
-						onClick={openSignIn}
-						className="bg-black text-white px-8 py-2.5 rounded-full ml-4 transition-all duration-500"
+						onClick={() => openSignIn()}
+						className="bg-primary hover:bg-primary-dull text-white px-8 py-2.5 rounded-full ml-4 transition-all duration-500 cursor-pointer"
 					>
 						Login
 					</button>
@@ -133,23 +174,21 @@ const Navbar = () => {
 
 			{/* Mobile Menu Button */}
 			<div className="flex items-center gap-3 md:hidden">
-				{user && (
-					<UserButton>
-						<UserButton.MenuItems>
-							<UserButton.Action
-								label="My bookings"
-								labelIcon={<BookIcon />}
-								onClick={() => navigate("/my-bookings")}
-							/>
-						</UserButton.MenuItems>
-					</UserButton>
-				)}
-				<img
+				<ThemeToggle />
+				{user && accountMenu}
+				<button
+					type="button"
 					onClick={() => setIsMenuOpen(!isMenuOpen)}
-					src={assets.menuIcon}
-					alt=""
-					className={`${isScrolled && "invert"} h-4`}
-				/>
+					aria-label="Open menu"
+					aria-expanded={isMenuOpen}
+					className="cursor-pointer"
+				>
+					<img
+						src={assets.menuIcon}
+						alt="open menu"
+						className={`${isScrolled ? "invert" : ""} h-4`}
+					/>
+				</button>
 			</div>
 
 			{/* Mobile Menu */}
@@ -159,39 +198,41 @@ const Navbar = () => {
 				}`}
 			>
 				<button
-					className="absolute top-4 right-4"
+					className="absolute top-4 right-4 cursor-pointer"
 					onClick={() => setIsMenuOpen(false)}
+					aria-label="Close menu"
 				>
-					<img
-						src={assets.closeIcon}
-						alt="close menu"
-						className="h-6.5"
-					/>
+					<img src={assets.closeIcon} alt="close menu" className="h-6.5" />
 				</button>
 
-				{navLinks.map((link, index) => (
-					<a
-						key={index}
-						href={link.path}
-						onClick={() => setIsMenuOpen(false)}
+				{navLinks.map((link) => (
+					<Link
+						key={link.name}
+						to={link.path}
+						onClick={(e) => {
+							setIsMenuOpen(false);
+							if (link.path === "/" && location.pathname === "/") {
+								e.preventDefault();
+								window.scrollTo({ top: 0, behavior: "smooth" });
+							} else {
+								window.scrollTo(0, 0);
+							}
+						}}
 					>
 						{link.name}
-					</a>
+					</Link>
 				))}
 
 				{user && (
-					<button
-						onClick={() => navigate("/owner")}
-						className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
-					>
-						Dashboard
-					</button>
+					<Link to="/saved" onClick={() => setIsMenuOpen(false)}>
+						Saved rooms
+					</Link>
 				)}
 
 				{!user && (
 					<button
-						onClick={openSignIn}
-						className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500"
+						onClick={() => openSignIn()}
+						className="bg-primary hover:bg-primary-dull text-white px-8 py-2.5 rounded-full transition-all duration-500 cursor-pointer"
 					>
 						Login
 					</button>

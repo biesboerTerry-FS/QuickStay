@@ -7,6 +7,7 @@ const Testimonials = () => {
 	return (
 		<div className="flex flex-col items-center px-6 md:px-16 lg:px-24 bg-slate-50 pt-20 pb-30">
 			<Title
+				as="h2"
 				title="What Our Guests Say"
 				subTitle="Discover why discerning travelers choose QuickStay for their luxury accommodations around the world."
 			/>
@@ -14,7 +15,7 @@ const Testimonials = () => {
 				{testimonials.map((testimonial) => (
 					<div
 						key={testimonial.id}
-						className="bg-white p-6 rounded-xl shadow"
+						className="bg-white p-6 rounded-2xl shadow-lg shadow-gray-900/5"
 					>
 						<div className="flex items-center gap-3">
 							<img

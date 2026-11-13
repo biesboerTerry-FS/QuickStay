@@ -1,11 +1,62 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
+import { setState } from "../data/store";
+import { useToast } from "../context/ToastContext";
+
+const footerLinks = {
+	Company: [
+		{ name: "About", path: "/about" },
+		{ name: "Careers", path: "/careers" },
+		{ name: "Press", path: "/press" },
+		{ name: "Blog", path: "/blog" },
+		{ name: "Partners", path: "/partners" },
+	],
+	Support: [
+		{ name: "Help Center", path: "/help" },
+		{ name: "Safety Information", path: "/safety" },
+		{ name: "Cancellation Options", path: "/cancellation" },
+		{ name: "Contact Us", path: "/contact" },
+		{ name: "Accessibility", path: "/accessibility" },
+	],
+};
+
+const legalLinks = [
+	{ name: "Privacy", path: "/privacy" },
+	{ name: "Terms", path: "/terms" },
+	{ name: "Sitemap", path: "/sitemap" },
+];
+
+const socialIcons = [
+	{ src: assets.instagramIcon, alt: "instagram-icon" },
+	{ src: assets.facebookIcon, alt: "facebook-icon" },
+	{ src: assets.twitterIcon, alt: "twitter-icon" },
+	{ src: assets.linkendinIcon, alt: "linkedin-icon" },
+];
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Footer = () => {
+	const toast = useToast();
+	const [email, setEmail] = useState("");
+
+	const subscribe = (event) => {
+		event.preventDefault();
+		if (!emailPattern.test(email.trim())) {
+			toast.show("Please enter a valid email address.", "error");
+			return;
+		}
+		setState("newsletter", (list) =>
+			list.includes(email.trim()) ? list : [...list, email.trim()]
+		);
+		setEmail("");
+		toast.show("Thanks for subscribing!");
+	};
+
 	return (
-		<div className="bg-[#f6f9fc] text-gray-500/80 pt-8 px-6 md:px-16 lg:px-24 xl:px-32">
-			<div className="flex flex-wrap justify-between gap-12 md:gap-6">
-				<div className="max-w-80">
+		<footer className="bg-[#f6f9fc] text-gray-600 pt-6 px-4 md:px-10 lg:px-16 xl:px-20">
+			<div className="flex flex-wrap justify-between gap-8 md:gap-4">
+				<div className="max-w-80 xl:max-w-64">
 					<img
 						src={assets.logo}
 						alt="logo"
@@ -17,117 +68,97 @@ const Footer = () => {
 						islands.
 					</p>
 					<div className="flex items-center gap-3 mt-4">
-						<img
-							src={assets.instagramIcon}
-							alt="instagram-icon"
-							className="w-6"
-						/>
-						<img
-							src={assets.facebookIcon}
-							alt="facebook-icon"
-							className="w-6"
-						/>
-						<img
-							src={assets.twitterIcon}
-							alt="twitter-icon"
-							className="w-6"
-						/>
-						<img
-							src={assets.linkendinIcon}
-							alt="linkedin-icon"
-							className="w-6"
-						/>
+						{socialIcons.map((icon) => (
+							<img
+								key={icon.alt}
+								src={icon.src}
+								alt={icon.alt}
+								className="w-6"
+							/>
+						))}
 					</div>
 				</div>
 
-				<div>
-					<p className="font-playfair text-lg text-gray-800">
-						COMPANY
-					</p>
-					<ul className="mt-3 flex flex-col gap-2 text-sm">
-						<li>
-							<a href="#">About</a>
-						</li>
-						<li>
-							<a href="#">Careers</a>
-						</li>
-						<li>
-							<a href="#">Press</a>
-						</li>
-						<li>
-							<a href="#">Blog</a>
-						</li>
-						<li>
-							<a href="#">Partners</a>
-						</li>
-					</ul>
-				</div>
+				{Object.entries(footerLinks).map(([heading, links]) => (
+					<div key={heading}>
+						<p className="font-playfair text-lg text-gray-800 uppercase">
+							{heading}
+						</p>
+						<ul className="mt-3 flex flex-col gap-2 text-sm">
+							{links.map((link) => (
+								<li key={link.path}>
+									<Link
+										to={link.path}
+										className="hover:text-gray-900 transition-colors"
+									>
+										{link.name}
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				))}
 
-				<div>
-					<p className="font-playfair text-lg text-gray-800">
-						SUPPORT
-					</p>
-					<ul className="mt-3 flex flex-col gap-2 text-sm">
-						<li>
-							<a href="#">Help Center</a>
-						</li>
-						<li>
-							<a href="#">Safety Information</a>
-						</li>
-						<li>
-							<a href="#">Cancellation Options</a>
-						</li>
-						<li>
-							<a href="#">Contact Us</a>
-						</li>
-						<li>
-							<a href="#">Accessibility</a>
-						</li>
-					</ul>
-				</div>
-
-				<div className="max-w-80">
-					<p className="font-playfair text-lg text-gray-800">
-						STAY UPDATED
-					</p>
-					<p className="mt-3 text-sm">
-						Subscribe to our newsletter for inspiration and special
-						offers.
-					</p>
-					<div className="flex items-center mt-4">
+				<div className="w-full xl:w-1/4 flex flex-col gap-3">
+					<div>
+						<p className="font-playfair text-lg text-gray-800 uppercase">
+							Stay Updated
+						</p>
+						<p className="mt-2 text-sm">
+							Subscribe to our newsletter for inspiration and special
+							offers.
+						</p>
+					</div>
+					<form onSubmit={subscribe} noValidate className="flex items-center">
 						<input
-							type="text"
-							className="bg-white rounded-l border border-gray-300 h-9 px-3 outline-none"
+							type="email"
+							value={email}
+							onChange={(event) => setEmail(event.target.value)}
+							aria-label="Email address"
+							className="bg-white rounded-l border border-gray-300 h-9 px-2 outline-none w-full"
 							placeholder="Your email"
 						/>
-						<button className="flex items-center justify-center bg-black h-9 w-9 aspect-square rounded-r">
+						<button
+							type="submit"
+							aria-label="Subscribe"
+							className="flex items-center justify-center bg-primary hover:bg-primary-dull h-9 w-9 aspect-square rounded-r cursor-pointer transition-all"
+						>
 							<img
 								src={assets.arrowIcon}
-								alt="arrow-icon"
+								alt=""
 								className="w-3.5 invert"
 							/>
 						</button>
-					</div>
+					</form>
 				</div>
 			</div>
-			<hr className="border-gray-300 mt-8" />
-			<div className="flex flex-col md:flex-row gap-2 items-center justify-between py-5">
+			<hr className="border-gray-300 mt-6" />
+			<div className="flex flex-col md:flex-row gap-2 items-center justify-between py-3">
 				<p>
 					© {new Date().getFullYear()} QuickStay. All rights reserved.
 				</p>
-				<ul className="flex items-center gap-4">
+				<ul className="flex items-center gap-4 flex-wrap justify-center">
 					<li>
-						<a href="#">Privacy</a>
+						<Link
+							to="/owner"
+							className="hover:text-gray-900 transition-colors"
+						>
+							Dashboard
+						</Link>
 					</li>
-					<li>
-						<a href="#">Terms</a>
-					</li>
-					<li>
-						<a href="#">Sitemap</a>
-					</li>
+					{legalLinks.map((link) => (
+						<li key={link.path}>
+							<Link
+								to={link.path}
+								className="hover:text-gray-900 transition-colors"
+							>
+								{link.name}
+							</Link>
+						</li>
+					))}
 				</ul>
 			</div>
-		</div>
+		</footer>
 	);
 };
 

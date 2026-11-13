@@ -12,11 +12,11 @@ const UserSchema = mongoose.Schema(
 		},
 		email: {
 			type: String,
-			required: true,
+			required: false,
 		},
 		image: {
 			type: String,
-			required: true,
+			required: false,
 		},
 		role: {
 			type: String,

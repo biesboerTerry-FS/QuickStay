@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /owner
+Disallow: /pay/
+Disallow: /book/
+Disallow: /my-bookings
+Disallow: /saved
+
+Sitemap: https://your-domain.example/sitemap.xml
